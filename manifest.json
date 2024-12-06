@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "CrunchParty",
+  "version": "1.0",
+  "description": "Synchronize Crunchyroll video playback across users.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.crunchyroll.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
