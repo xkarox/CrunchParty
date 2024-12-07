@@ -1,6 +1,6 @@
 import {ExtensionEvent, Message} from "./types";
 
-
+chrome.storage.local.clear()
 console.log("CrunchParty background script running.");
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -63,7 +63,7 @@ chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) =>
         console.log("Room joined successfully background");
         chrome.storage.local.set({roomId: message.data})
         chrome.runtime.sendMessage({event: message.event, data: message.data});
-    }else if (message.event === ExtensionEvent.leaveRoom) {
+    } else if (message.event === ExtensionEvent.leaveRoom) {
         chrome.storage.local.clear()
     }
     else {
