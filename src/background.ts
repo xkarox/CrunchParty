@@ -13,30 +13,60 @@ chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) =>
 
     if (message.event === ExtensionEvent.createRoom) {
         console.log("Create Room message received. Creating room...");
-        let queryOptions = { active: true, lastFocusedWindow: true, url: "https://www.crunchyroll.com/*" };
+        let queryOptions = {
+            active: true,
+            lastFocusedWindow: true,
+            url: "https://www.crunchyroll.com/*"
+        };
         chrome.tabs.query(queryOptions, (tabs) => {
             let tab = tabs[0];
             if (tab) {
-                chrome.tabs.sendMessage(tab.id!, { event: ExtensionEvent.createRoom })
+                chrome.tabs.sendMessage(tab.id!, {event: ExtensionEvent.createRoom})
             }
         });
-    }
-    else if (message.event === ExtensionEvent.roomCreated) {
+    } else if (message.event === ExtensionEvent.roomCreated) {
         console.log("Room created successfully background");
         chrome.storage.local.set({roomId: message.data})
-        chrome.runtime.sendMessage({ event: message.event, data: message.data });
+        chrome.runtime.sendMessage({event: message.event, data: message.data});
 
     } else if (message.event === ExtensionEvent.requestRoomId) {
         console.log("Request Room ID message received. Sending room ID...");
         try {
             chrome.storage.local.get('roomId', (result) => {
                 console.log("Room ID: ", result.roomId);
-                chrome.runtime.sendMessage({ event: ExtensionEvent.roomIdFound, data: result.roomId });
+                chrome.runtime.sendMessage({
+                    event: ExtensionEvent.roomIdFound,
+                    data: result.roomId
+                });
             });
         } catch {
-            sendResponse({ event: ExtensionEvent.roomIdNotFound, data: null });
+            sendResponse({event: ExtensionEvent.roomIdNotFound, data: null});
         }
-    } else {
+    } else if (message.event === ExtensionEvent.joinRoom) {
+        console.log("Join Room message received. Joining room...");
+        let queryOptions = {
+            active: true,
+            lastFocusedWindow: true,
+            url: "https://www.crunchyroll.com/*"
+        };
+        chrome.tabs.query(queryOptions, (tabs) => {
+            let tab = tabs[0];
+            if (tab) {
+                console.log("Sending join room message to content script");
+                chrome.tabs.sendMessage(tab.id!, {
+                    event: ExtensionEvent.joinRoom,
+                    data: message.data
+                })
+            }
+        });
+    } else if (message.event === ExtensionEvent.roomJoined) {
+        console.log("Room joined successfully background");
+        chrome.storage.local.set({roomId: message.data})
+        chrome.runtime.sendMessage({event: message.event, data: message.data});
+    }else if (message.event === ExtensionEvent.leaveRoom) {
+        chrome.storage.local.clear()
+    }
+    else {
         console.log("Unknown message type: ", message);
     }
 

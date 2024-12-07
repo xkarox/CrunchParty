@@ -8,6 +8,10 @@ export enum CommunicationEvent {
 export enum ExtensionEvent {
     createRoom = "createRoom",
     roomCreated = "roomCreated",
+    joinRoom = "joinRoom",
+    roomJoined = "roomJoined",
+    leaveRoom = "leaveRoom",
+    roomLeft = "roomLeft",
     requestRoomId = "requestId",
     roomIdNotFound = "roomIdNotFound",
     roomIdFound = "roomIdFound",

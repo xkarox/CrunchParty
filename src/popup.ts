@@ -15,7 +15,9 @@ document.getElementById('createRoom')?.addEventListener('click', () => {
 
 document.getElementById('joinRoom')?.addEventListener('click', () => {
     console.log('Join Room clicked');
-    // Logic to join a room
+    const roomId = (document.getElementById('roomID') as HTMLInputElement).value;
+    console.log('Room to connect ID: ', roomId);
+    chrome.runtime.sendMessage({ event: ExtensionEvent.joinRoom, data: roomId });
 });
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -31,6 +33,10 @@ chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) =>
     }
     if (message.event === ExtensionEvent.roomIdFound) {
         console.log('Room ID found');
+        document.getElementById('roomUrl')!.innerText = message.data;
+    }
+    if (message.event === ExtensionEvent.roomJoined) {
+        console.log('Room joined successfully');
         document.getElementById('roomUrl')!.innerText = message.data;
     }
 });

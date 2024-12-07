@@ -1,14 +1,15 @@
 import Peer, {DataConnection} from 'peerjs';
-import {ExtensionEvent, Message} from "./types";
+import {CommunicationEvent, ExtensionEvent, Message} from "./types";
 
 let peer: Peer;
 let open: boolean = false;
+let externalCommand: boolean = false;
 let connection: DataConnection;
 const video = document.querySelector('video') as HTMLVideoElement;
 
 
 console.log("CrunchParty content script running.");
-function peerFactory()
+function peerFactory(createRoom: boolean = false): Peer
 {
     let peer = new Peer({
         host: '0.peerjs.com',
@@ -45,12 +46,17 @@ function peerFactory()
 
     peer.on('open', (id) => {
         console.log('Peer ID: ', id);
-        chrome.runtime.sendMessage({ event: ExtensionEvent.roomCreated, data: id });
+        if (createRoom) {
+            chrome.runtime.sendMessage({
+                event: ExtensionEvent.roomCreated,
+                data: id
+            });
+        }
     });
 
     peer.on('connection', (conn) => {
         console.log('Peer connected: ', conn.peer);
-
+        connection = conn;
         conn.on('data', (data) => {
             console.log('Received data: ', data);
         });
@@ -77,8 +83,18 @@ function connectToPeer(peer: Peer, peerIdToConnect: string) {
 
     conn.on('open', () => {
         console.log('Connection opened with peer: ', peerIdToConnect);
-        console.log('Sending data to peers: ', peerIdToConnect);
         conn.send('hi!');
+        chrome.runtime.sendMessage({ event: ExtensionEvent.roomJoined, data: peerIdToConnect });
+    });
+
+    conn.on('data', (data) => {
+        console.log('Received data: ', data);
+        if (data == 'pause') {
+            console.log('Received pause command');
+            externalCommand = true;
+            video.pause();
+            externalCommand = false
+        }
     });
 
     conn.on('close', () => {
@@ -101,7 +117,9 @@ if (video) {
 
     video.addEventListener('pause', () => {
         console.log('Video paused');
-        chrome.runtime.sendMessage({ action: 'syncPlayback', status: 'pause' });
+        if (!externalCommand) {
+            connection.send(CommunicationEvent.pause);
+        }
     });
 
     video.addEventListener('waiting', () => {
@@ -118,7 +136,15 @@ function sleep(milliseconds: number): void {
 }
 chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
    if (message.event === ExtensionEvent.createRoom) {
+       peer = peerFactory(true);
+   } else if (message.event === ExtensionEvent.joinRoom) {
        peer = peerFactory();
+       setTimeout(() => {
+           connection = connectToPeer(peer, message.data);
+       }, 3000);
    }
 });
 
+window.addEventListener('beforeunload', function(event) {
+    chrome.runtime.sendMessage({event: ExtensionEvent.leaveRoom});
+});
