@@ -3,6 +3,9 @@
   "name": "CrunchParty",
   "version": "0.0.1",
   "description": "Synchronize Crunchyroll video playback across users.",
+  "host_permissions": [
+    "https://*/*"
+  ],
   "permissions": [
     "activeTab",
     "storage",
@@ -13,7 +16,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.crunchyroll.com/*"],
+      "all_frames": true,
+      "matches": [
+        "*://static.crunchyroll.com/*"
+      ],
       "js": ["content.js"]
     }
   ],
