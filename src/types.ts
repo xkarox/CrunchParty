@@ -3,6 +3,7 @@ export enum CommunicationEvent {
     pause = "pause",
     timeUpdate = "timeUpdate",
     buffering = "buffering",
+    seeked = "seeked",
 }
 
 export enum ExtensionEvent {

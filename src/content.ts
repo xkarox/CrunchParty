@@ -1,5 +1,10 @@
 import Peer, {DataConnection} from 'peerjs';
-import {CommunicationEvent, ExtensionEvent, Message} from "./types";
+import {
+    CommunicationEvent,
+    ExtensionEvent,
+    Message,
+    SyncMessage
+} from "./types";
 
 let peer: Peer;
 let open: boolean = false;
@@ -9,6 +14,35 @@ const video = document.querySelector('video') as HTMLVideoElement;
 
 
 console.log("CrunchParty content script running.");
+
+function handleSyncMessage(message: SyncMessage) {
+    if (message.event == CommunicationEvent.pause) {
+        console.log('Received pause command');
+        externalCommand = true;
+        video.pause();
+        externalCommand = false
+    }
+    if (message.event == CommunicationEvent.play) {
+        console.log('Received play command');
+        externalCommand = true;
+        video.play();
+        externalCommand = false;
+    }
+    if (message.event == CommunicationEvent.buffering) {
+        console.log('Received buffering command');
+        externalCommand = true;
+        video.pause();
+        externalCommand = false;
+    }
+    if (message.event == CommunicationEvent.seeked) {
+        console.log('Received seeking command');
+        externalCommand = true;
+        video.currentTime = message.data;
+        setTimeout(() => { externalCommand = false; }, 200); // Clear after a
+        // small delay
+    }
+}
+
 function peerFactory(createRoom: boolean = false): Peer
 {
     let peer = new Peer({
@@ -59,6 +93,8 @@ function peerFactory(createRoom: boolean = false): Peer
         connection = conn;
         conn.on('data', (data) => {
             console.log('Received data: ', data);
+            const message = data as SyncMessage;
+            handleSyncMessage(message);
         });
     });
 
@@ -88,13 +124,9 @@ function connectToPeer(peer: Peer, peerIdToConnect: string) {
     });
 
     conn.on('data', (data) => {
+        const message = data as SyncMessage;
         console.log('Received data: ', data);
-        if (data == 'pause') {
-            console.log('Received pause command');
-            externalCommand = true;
-            video.pause();
-            externalCommand = false
-        }
+        handleSyncMessage(message);
     });
 
     conn.on('close', () => {
@@ -111,29 +143,45 @@ function connectToPeer(peer: Peer, peerIdToConnect: string) {
 if (video) {
     video.addEventListener('play', () => {
         console.log('Video started');
-        // Send message to background to synchronize playback
-        chrome.runtime.sendMessage({ action: 'syncPlayback', status: 'play' });
+        console.log('External command: ', externalCommand);
+        if (!externalCommand) {
+            connection.send({event: CommunicationEvent.play});
+        }
     });
 
     video.addEventListener('pause', () => {
         console.log('Video paused');
+        console.log('External command: ', externalCommand);
         if (!externalCommand) {
-            connection.send(CommunicationEvent.pause);
+            connection.send({event: CommunicationEvent.pause});
         }
     });
 
     video.addEventListener('waiting', () => {
         console.log('Video buffering');
-        chrome.runtime.sendMessage({ action: 'syncPlayback', status: 'buffering' });
+        console.log('External command: ', externalCommand);
+        if (!externalCommand) {
+            connection.send({event: CommunicationEvent.buffering});
+        }
+    });
+
+    // video.addEventListener('timeupdate', () => {
+    //     console.log(`Current playback time: ${video.currentTime}`);
+    //     console.log('External command: ', externalCommand);
+    //     if (!externalCommand) {
+    //         connection.send({event: CommunicationEvent.timeUpdate, data: video.currentTime});
+    //     }
+    // });
+
+    video.addEventListener('seeked', () => {
+        console.log(`Seeking...: ${video.currentTime}`);
+        console.log('External command: ', externalCommand);
+        if (!externalCommand) {
+            connection.send({event: CommunicationEvent.seeked, data: video.currentTime});
+        }
     });
 }
 
-function sleep(milliseconds: number): void {
-    const start = new Date().getTime();
-    while (new Date().getTime() - start < milliseconds) {
-        // Busy-wait loop
-    }
-}
 chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
    if (message.event === ExtensionEvent.createRoom) {
        peer = peerFactory(true);
