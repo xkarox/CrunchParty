@@ -29,14 +29,16 @@ chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) =>
     console.log("Message received in popup script: ", message);
     if (message.event === ExtensionEvent.roomCreated) {
         console.log('Room created successfully popup');
-        document.getElementById('roomUrl')!.innerText = message.data;
+        (document.getElementById('roomUrl')! as HTMLInputElement).value = message.data;
     }
     if (message.event === ExtensionEvent.roomIdFound) {
         console.log('Room ID found');
         document.getElementById('roomUrl')!.innerText = message.data;
+        document.getElementById('connectedIndicator')!.style.backgroundColor = 'green';
     }
     if (message.event === ExtensionEvent.roomJoined) {
         console.log('Room joined successfully');
-        document.getElementById('roomUrl')!.innerText = message.data;
+        (document.getElementById('roomUrl')! as HTMLInputElement).value = message.data;
+        document.getElementById('connectedIndicator')!.style.backgroundColor = 'green';
     }
 });

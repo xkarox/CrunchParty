@@ -1,22 +1,32 @@
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>CrunchParty</title>
-    <style>
-        body {
-            width: 200px;
-            height: 100px;
-            padding: 10px;
-            font-family: Arial, sans-serif;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-<h3>CrunchParty v0.0.1</h3>
-<p>Room ID:</p><p id="roomUrl"></p>
-<button id="createRoom">Create Room</button>
-<input type="text" id="roomID" placeholder="Enter Room ID">
-<button id="joinRoom">Join Room</button>
+    <div id="header">
+        <div id="connectedIndicator">
+        </div>
+        <div id="headerDiv">
+            <h3>CrunchParty</h3>
+        </div>
+        <div>
+            1
+        </div>
+    </div>
+    <div id="content">
+
+        <div id="createRoomDiv">
+            <input type="text" id="roomUrl" placeholder="Room ID" readonly>
+            <button id="createRoom">Create Room</button>
+        </div>
+        <div id="joinRoomDiv">
+            <input type="text" id="roomID" placeholder="Enter Room ID">
+            <button id="joinRoom">Join Room</button>
+        </div>
+    </div>
 </body>
 <script src="popup.js"></script>
 </html>
