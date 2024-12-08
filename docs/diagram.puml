@@ -1,0 +1,54 @@
+@startuml CrunchParty Extension Architecture
+
+skinparam packageStyle rectangle
+skinparam componentStyle uml2
+
+package "Chrome Extension" {
+  [Popup] as popup
+  [Background Script] as background
+  [Content Script] as content
+  database "Chrome Storage" as storage
+
+  package "Core Services" {
+    [PeerService] as peer
+    [MessageHandler] as messageHandler
+    [StorageService] as storageService
+  }
+
+  package "Types" {
+    interface "ExtensionEvent" as events
+    interface "Message" as message
+    interface "SyncMessage" as syncMessage
+    interface "CommunicationEvent" as commEvents
+  }
+
+  package "Video Sync" {
+    [VideoController] as videoController
+    [SyncHandler] as syncHandler
+  }
+}
+
+cloud "PeerJS Server" as peerServer
+[External Video Player] as videoPlayer
+
+' Relationships
+popup --> messageHandler
+background --> messageHandler
+content --> messageHandler
+messageHandler --> storage
+
+content --> peer
+peer --> peerServer
+content --> videoController
+videoController --> videoPlayer
+videoController --> syncHandler
+
+messageHandler ..> events
+messageHandler ..> message
+syncHandler ..> syncMessage
+syncHandler ..> commEvents
+
+peer --> storageService
+storageService --> storage
+
+@enduml

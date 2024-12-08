@@ -1,32 +1,39 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>CrunchParty</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="header">
-        <div id="connectedIndicator">
-        </div>
-        <div id="headerDiv">
-            <h3>CrunchParty</h3>
-        </div>
-        <div>
-            1
-        </div>
+<div class="header">
+    <h1>CrunchParty</h1>
+    <div class="status-container">
+        <div id="connectionStatus"></div>
+        <span id="userCount">0</span>
     </div>
-    <div id="content">
+</div>
 
-        <div id="createRoomDiv">
-            <input type="text" id="roomUrl" placeholder="Room ID" readonly>
-            <button id="createRoom">Create Room</button>
-        </div>
-        <div id="joinRoomDiv">
-            <input type="text" id="roomID" placeholder="Enter Room ID">
-            <button id="joinRoom">Join Room</button>
+<div class="container">
+    <div id="roomInfo" class="room-info">
+        <div id="currentRoom" class="hidden">
+            <p class="room-label">Current Room:</p>
+            <code id="roomId"></code>
         </div>
     </div>
+
+    <div class="user-list">
+        <p class="section-label">Participants:</p>
+        <ul id="participants"></ul>
+    </div>
+
+    <div class="actions">
+        <button id="createRoom" class="primary-btn">Create Room</button>
+        <div class="join-section">
+            <input type="text" id="joinRoomId" placeholder="Enter Room ID">
+            <button id="joinRoom" class="secondary-btn">Join Room</button>
+        </div>
+    </div>
+</div>
 </body>
 <script src="popup.js"></script>
 </html>
